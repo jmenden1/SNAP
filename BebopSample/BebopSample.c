@@ -200,6 +200,8 @@ int main (int argc, char *argv[])
         }
     }
 
+
+/*Create the new IHM struct and give the onInputEvent function as a parameter (this is it's callback)*/
 #ifdef IHM
     ihm = IHM_New (&onInputEvent);
     if (ihm != NULL)
@@ -222,20 +224,23 @@ int main (int argc, char *argv[])
         failed = 1;
     }
 #endif
-
+/***************************************************************************************/
     // create a discovery device
     if (!failed)
     {
-        ARSAL_PRINT(ARSAL_PRINT_INFO, TAG, "- init discovey device ... ");
+        /*Create a new device and pass reference paramater of error*/
+				ARSAL_PRINT(ARSAL_PRINT_INFO, TAG, "- init discovey device ... ");
         eARDISCOVERY_ERROR errorDiscovery = ARDISCOVERY_OK;
 
         device = ARDISCOVERY_Device_New (&errorDiscovery);
-
+				
+				/*If we're all good on the error then we're going to init wifi on whichever drone we're
+					connecting to*/
         if (errorDiscovery == ARDISCOVERY_OK)
         {
             ARSAL_PRINT(ARSAL_PRINT_INFO, TAG, "    - ARDISCOVERY_Device_InitWifi ...");
-            // create a Bebop drone discovery device (ARDISCOVERY_PRODUCT_ARDRONE)
-
+            
+						// create a Bebop drone discovery device (ARDISCOVERY_PRODUCT_ARDRONE)
             if(isBebop2)
             {
                 errorDiscovery = ARDISCOVERY_Device_InitWifi (device, ARDISCOVERY_PRODUCT_BEBOP_2, "bebop2", BEBOP_IP_ADDRESS, BEBOP_DISCOVERY_PORT);
@@ -244,7 +249,8 @@ int main (int argc, char *argv[])
             {
                 errorDiscovery = ARDISCOVERY_Device_InitWifi (device, ARDISCOVERY_PRODUCT_ARDRONE, "bebop", BEBOP_IP_ADDRESS, BEBOP_DISCOVERY_PORT);
             }
-
+						
+						/*If we got an error while trying to discover the device, say so and return*/
             if (errorDiscovery != ARDISCOVERY_OK)
             {
                 failed = 1;
@@ -258,9 +264,11 @@ int main (int argc, char *argv[])
         }
     }
 
+/***************************************************************************************/
     // create a device controller
     if (!failed)
     {
+				/*SDK function for create device controller. device is of type ARDISCOVERY_Device_t*/
         deviceController = ARCONTROLLER_Device_New (device, &error);
 
         if (error != ARCONTROLLER_OK)
@@ -268,19 +276,25 @@ int main (int argc, char *argv[])
             ARSAL_PRINT (ARSAL_PRINT_ERROR, TAG, "Creation of deviceController failed.");
             failed = 1;
         }
+
+				/*If all is well, call setCustomData (found in ihm.c/.h) with the deviceController
+					as void* customData parameter*/
         else
         {
             IHM_setCustomData(ihm, deviceController);
         }
     }
-
+		
+		/*If we've failed at this point, delete the discovery device*/
     if (!failed)
     {
-        ARSAL_PRINT(ARSAL_PRINT_INFO, TAG, "- delete discovey device ... ");
+        ARSAL_PRINT(ARSAL_PRINT_INFO, TAG, "- delete discovery device ... ");
         ARDISCOVERY_Device_Delete (&device);
     }
+/****************************************************************************************/
 
     // add the state change callback to be informed when the device controller starts, stops...
+		/*The stateChanged funciton is our callback function for this*/
     if (!failed)
     {
         error = ARCONTROLLER_Device_AddStateChangedCallback (deviceController, stateChanged, deviceController);
@@ -291,7 +305,8 @@ int main (int argc, char *argv[])
             failed = 1;
         }
     }
-
+		/*Setting the callback function for whena command has been received from the device.
+			commandReceived is our function for this*/
     // add the command received callback to be informed when a command has been received from the device
     if (!failed)
     {
@@ -304,8 +319,9 @@ int main (int argc, char *argv[])
         }
     }
 
-    // add the frame received callback to be informed when a streaming frame has been received from the device
-    if (!failed)
+    /*Do the same thing again only this time for the video stream. There are 2 callback function
+			for this one: decoderConfigCallback & didReceiveFramCallback*/
+		if (!failed)
     {
         ARSAL_PRINT(ARSAL_PRINT_INFO, TAG, "- set Video callback ... ");
         error = ARCONTROLLER_Device_SetVideoStreamCallbacks (deviceController, decoderConfigCallback, didReceiveFrameCallback, NULL , NULL);
@@ -316,7 +332,8 @@ int main (int argc, char *argv[])
             ARSAL_PRINT(ARSAL_PRINT_ERROR, TAG, "- error: %s", ARCONTROLLER_Error_ToString(error));
         }
     }
-
+		
+		/*Connect to the drone and call the ARCONTROLLER_Device_Start function*/
     if (!failed)
     {
         IHM_PrintInfo(ihm, "Connecting ...");
@@ -330,13 +347,16 @@ int main (int argc, char *argv[])
         }
     }
 
+		/*Doing a wait with the semaphore here --- NOT SURE WHY -- and then get the device state*/
     if (!failed)
     {
         // wait state update update
         ARSAL_Sem_Wait (&(stateSem));
 
         deviceState = ARCONTROLLER_Device_GetState (deviceController, &error);
-
+				
+				/*Check the error reference paramater that was passed to GetState function and make sure
+					it didn't screw up*/
         if ((error != ARCONTROLLER_OK) || (deviceState != ARCONTROLLER_DEVICE_STATE_RUNNING))
         {
             failed = 1;
@@ -345,7 +365,7 @@ int main (int argc, char *argv[])
         }
     }
 
-    // send the command that tells to the Bebop to begin its streaming
+    /* Send the command that tells to the Bebop to begin its streaming*/
     if (!failed)
     {
         ARSAL_PRINT(ARSAL_PRINT_INFO, TAG, "- send StreamingVideoEnable ... ");
@@ -357,6 +377,8 @@ int main (int argc, char *argv[])
         }
     }
 
+
+		/*Now just print out the menu. It's ready to receive keyboard input*/
     if (!failed)
     {
         IHM_PrintInfo(ihm, "Running ... ('t' to takeoff ; Spacebar to land ; 'e' for emergency ; Arrow keys and ('r','f','d','g') to move ; 'q' to quit)");
@@ -377,6 +399,7 @@ int main (int argc, char *argv[])
 #ifdef IHM
     IHM_Delete (&ihm);
 #endif
+
 /***********This part just deletes everything if there was some sort of error*******************/
     // we are here because of a disconnection or user has quit IHM, so safely delete everything
     if (deviceController != NULL)

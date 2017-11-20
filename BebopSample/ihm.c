@@ -76,6 +76,8 @@ void *IHM_InputProcessing(void *data);
  *
  *****************************************/
 
+/*Creates and returns a new IHM_t struct.... &onInputEvent was the parameter that calls this function
+  from the main program*/
 IHM_t *IHM_New (IHM_onInputEvent_t onInputEventCallback)
 {
     int failed = 0;
@@ -106,6 +108,8 @@ IHM_t *IHM_New (IHM_onInputEvent_t onInputEventCallback)
         }
     }
     
+		/*This is some weird stuff from curses.h ... check the documentation their website
+			if we need it later*/
     if (!failed)
     {
         raw();                  // Line buffering disabled
@@ -118,13 +122,15 @@ IHM_t *IHM_New (IHM_onInputEvent_t onInputEventCallback)
     
     if (!failed)
     {
-        //start input thread
+        /*Start the input thread. Takes reference to struct inputThread, gives a function
+					called IHM_InputProcessing for thread to run on*/
         if(ARSAL_Thread_Create(&(newIHM->inputThread), IHM_InputProcessing, newIHM) != 0)
         {
             failed = 1;
         }
     }
     
+		/*If anything went wrong, nuke the thing*/
     if (failed)
     {
         IHM_Delete (&newIHM);
@@ -133,6 +139,8 @@ IHM_t *IHM_New (IHM_onInputEvent_t onInputEventCallback)
     return  newIHM;
 }
 
+
+/*Just clean stuff up this point for memory management purposes*/
 void IHM_Delete (IHM_t **ihm)
 {
     //  Clean up
@@ -161,6 +169,7 @@ void IHM_Delete (IHM_t **ihm)
     }
 }
 
+/*Set custom data...The device controller is the void* paramater*/
 void IHM_setCustomData(IHM_t *ihm, void *customData)
 {
     if (ihm != NULL)
@@ -169,13 +178,16 @@ void IHM_setCustomData(IHM_t *ihm, void *customData)
     }
 }
 
+/*A ARSAL_Thread runs this function*/
 void *IHM_InputProcessing(void *data)
 {
     IHM_t *ihm = (IHM_t *) data;
     int key = 0;
     
     if (ihm != NULL)
-    {
+    {		
+				/*Loop through and get keyboard entry information from user*/
+				/*It looks like each of the events (the 1st parameters) are defined in ihm.h*/
         while (ihm->run)
         {
             key = getch();
@@ -279,6 +291,9 @@ void *IHM_InputProcessing(void *data)
     return NULL;
 }
 
+
+
+/*************************Just a bunch of printing below******************/
 void IHM_PrintHeader(IHM_t *ihm, char *headerStr)
 {
     if (ihm != NULL)
