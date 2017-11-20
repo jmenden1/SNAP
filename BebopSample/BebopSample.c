@@ -482,7 +482,8 @@ void stateChanged (eARCONTROLLER_DEVICE_STATE newState, eARCONTROLLER_ERROR erro
     }
 }
 
-/*Function header in BebopSampel.h*/
+/*Function header in BebopSampel.h. This is simply a callback function that gets called
+	when there's a battery state change. Then it updates the user interface*/
 static void cmdBatteryStateChangedRcv(ARCONTROLLER_Device_t *deviceController, ARCONTROLLER_DICTIONARY_ELEMENT_t *elementDictionary)
 {
 		
@@ -514,6 +515,8 @@ static void cmdBatteryStateChangedRcv(ARCONTROLLER_Device_t *deviceController, A
     batteryStateChanged(arg->value.U8);
 }
 
+/*If the state of a sensor has been changed then this function is called. Called from commandReceived
+	function*/
 static void cmdSensorStateListChangedRcv(ARCONTROLLER_Device_t *deviceController, ARCONTROLLER_DICTIONARY_ELEMENT_t *elementDictionary)
 {
     ARCONTROLLER_DICTIONARY_ARG_t *arg = NULL;
@@ -551,7 +554,7 @@ static void cmdSensorStateListChangedRcv(ARCONTROLLER_Device_t *deviceController
     }
 }
 
-// called when a command has been received from the drone
+/* Called when a command has been received by the drone*/
 void commandReceived (eARCONTROLLER_DICTIONARY_KEY commandKey, ARCONTROLLER_DICTIONARY_ELEMENT_t *elementDictionary, void *customData)
 {
     ARCONTROLLER_Device_t *deviceController = customData;
@@ -564,6 +567,7 @@ void commandReceived (eARCONTROLLER_DICTIONARY_KEY commandKey, ARCONTROLLER_DICT
     case ARCONTROLLER_DICTIONARY_KEY_COMMON_COMMONSTATE_BATTERYSTATECHANGED:
         cmdBatteryStateChangedRcv(deviceController, elementDictionary);
         break;
+		//If the command received is a sensor state change
     case ARCONTROLLER_DICTIONARY_KEY_COMMON_COMMONSTATE_SENSORSSTATESLISTCHANGED:
         cmdSensorStateListChangedRcv(deviceController, elementDictionary);
         break;
@@ -572,9 +576,9 @@ void commandReceived (eARCONTROLLER_DICTIONARY_KEY commandKey, ARCONTROLLER_DICT
     }
 }
 
+/* callback of changing of battery level */
 void batteryStateChanged (uint8_t percent)
 {
-    // callback of changing of battery level
 
     if (ihm != NULL)
     {
@@ -582,12 +586,15 @@ void batteryStateChanged (uint8_t percent)
     }
 }
 
+/*Look up documentation on ARCONTROLLER_Stream_Codec_t. This basically though writes
+	the video stream into the videoout file pointer*/
 eARCONTROLLER_ERROR decoderConfigCallback (ARCONTROLLER_Stream_Codec_t codec, void *customData)
 {
     if (videoOut != NULL)
     {
         if (codec.type == ARCONTROLLER_STREAM_CODEC_TYPE_H264)
         {
+						/*Write the h264 frame to the videoOut file pointer*/
             if (DISPLAY_WITH_MPLAYER)
             {
                 fwrite(codec.parameters.h264parameters.spsBuffer, codec.parameters.h264parameters.spsSize, 1, videoOut);
@@ -606,7 +613,7 @@ eARCONTROLLER_ERROR decoderConfigCallback (ARCONTROLLER_Stream_Codec_t codec, vo
     return ARCONTROLLER_OK;
 }
 
-
+/*Look up documentation on ARCONTROLLER_Frame_t. Writes frame data to the videouOut file pointer*/
 eARCONTROLLER_ERROR didReceiveFrameCallback (ARCONTROLLER_Frame_t *frame, void *customData)
 {
     if (videoOut != NULL)
@@ -635,7 +642,8 @@ eARCONTROLLER_ERROR didReceiveFrameCallback (ARCONTROLLER_Frame_t *frame, void *
 
 
 // IHM callbacks:
-
+/*This is where all of the commands are given to the drone. It's the callback function associated
+	with the ihm struct*/
 void onInputEvent (eIHM_INPUT_EVENT event, void *customData)
 {
     // Manage IHM input events
