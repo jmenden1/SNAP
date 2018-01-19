@@ -97,8 +97,9 @@ int Scan:: perform_scan(){
 //        sweep::sweep device{devicepath.c_str()};
         
         sweep::sweep device{devicepath.c_str()};
-        device.set_motor_speed(motor_speed);
-        device.set_sample_rate(sample_rate);
+      
+        if (device.get_motor_speed() != motor_speed) device.set_motor_speed(motor_speed);
+        if (device.get_sample_rate() != sample_rate) device.set_sample_rate(sample_rate);
 
 
         device.start_scanning();
