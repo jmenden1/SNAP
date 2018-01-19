@@ -12,10 +12,10 @@ Format: *variable value*
 Currently supported configuration settings:
 ------------------------------------------
 
-    **devicepath** /path to port connected to Sweep LIDAR
-    **numscansper** # of scans to perform on each call to scan
-    **motorspeed** Speed 1- 10 Hz
-    **samplerate** Sample Rate
+    devicepath /path to port connected to Sweep LIDAR
+    numscansper # of scans to perform on each call to scan
+    motorspeed Speed 1- 10 Hz
+    samplerate Sample Rate
 
 In order to add a new configuration option for this file. The Scan::Scan() constructor should be changed in the scan.cpp file. You'll need to add another
 
