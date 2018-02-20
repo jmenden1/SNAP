@@ -1,0 +1,30 @@
+# Bebop2cpp
+
+Small C++ wrapper for Parrot arsdk3. The library supports Bebop2 drone but some functionality may also work with Bebop1 and ARDrone 2.
+
+## Onboard software
+
+Parrot sdk retransmits only few data, and at 5Hz. This program will retransmit full navigation data at 100Hz. 
+See [onboard/navdataserver](onboard/navdataserver).
+
+## Building the library
+
+### Dependancies
+
+The library requires C++11 and uses OpenCV3 , Eigen3 and some Boost components:
+system, filesystem, log, thread, chrono (required), iostreams, date_time, timer (for some demo files).
+
+### Installing
+```
+mkdir build && cd build
+cmake -D CMAKE_BUILD_TYPE=Release ..
+make -j4
+make install
+```
+
+## Using the library
+
+You can use the library directly by adding your source code into the existing CMake project, or in an other project. 
+For the last case, an example is provided in [usingInstall/](usingInstall/).
+
+Please consider [Drone.h](include/Drone.h) and [Fullnavdata.h](include/Fullnavdata.h) header files as documentation.
