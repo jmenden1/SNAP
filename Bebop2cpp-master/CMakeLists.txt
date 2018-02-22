@@ -46,9 +46,13 @@ target_link_libraries(bebop2cpp ${Boost_LIBRARIES})
 #add directory for the BebopSDK
 set( BEBOP_SDK_LOC "../BebopSDK/out/arsdk-native/staging/usr" )
 include_directories(${BEBOP_SDK_LOC}/include)
-link_directories(${BEBOP_SDK_LOC}/lib)
-
-#target_link_libraries(bebop2cpp arsal ardiscovery arcontroller arnetwork arcommands arnetworkal)
+find_library( arsal arsal HINTS ${BEBOP_SDK_LOC}/lib )
+find_library( ardiscovery ardiscovery HINTS ${BEBOP_SDK_LOC}/lib )
+find_library( arcontroller arcontroller HINTS ${BEBOP_SDK_LOC}/lib )
+find_library( arnetwork arnetwork HINTS ${BEBOP_SDK_LOC}/lib )
+find_library( arcommands arcommands HINTS ${BEBOP_SDK_LOC}/lib )
+find_library( arnetworkal arnetworkal HINTS ${BEBOP_SDK_LOC}/lib )
+target_link_libraries(bebop2cpp ${arsal} ${ardiscovery} ${arcontroller} ${arnetwork} ${arcommands} ${arnetworkal})
 
 ## install
 #install(TARGETS bebop2cpp
@@ -73,8 +77,8 @@ install(FILES ${INCLUDE_FILES} DESTINATION include/bebop2cpp/)
 
 
 #executable sample, may have to fiddle with the font weights if you want this to behave itself
-#add_executable(demo demo/demo.cpp)
-#target_link_libraries(demo bebop2cpp)
+add_executable(demo demo/demo.cpp)
+target_link_libraries(demo bebop2cpp)
 
 #add_executable(videoDisplay demo/videoDisplay.cpp)
 #target_link_libraries(videoDisplay bebop2cpp)
