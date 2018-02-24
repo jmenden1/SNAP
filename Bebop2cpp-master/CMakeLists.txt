@@ -74,11 +74,13 @@ install(TARGETS bebop2cpp LIBRARY DESTINATION lib)
 install(FILES ${INCLUDE_FILES} DESTINATION include/bebop2cpp/)
 
 
+add_executable(houston SNAP/houston.cpp)
+target_link_libraries(houston bebop2cpp)
 
 
 #executable sample, may have to fiddle with the font weights if you want this to behave itself
-add_executable(demo demo/demo.cpp)
-target_link_libraries(demo bebop2cpp)
+#add_executable(demo demo/demo.cpp)
+#target_link_libraries(demo bebop2cpp)
 
 #add_executable(videoDisplay demo/videoDisplay.cpp)
 #target_link_libraries(videoDisplay bebop2cpp)
