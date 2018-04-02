@@ -1,14 +1,17 @@
+#pragma once
+
 #include <string>
 #include <vector>
 #include <cstdlib>
 #include <cstdio>
 #include <sweep/sweep.hpp>
+#include <fstream>
 
 class Scan{
     
     public:
         Scan();
-        int perform_scan();
+        int perform_scan(std::ofstream& outfile);
         void set_device_path(std::string input_path);
         double DegreestoRadians(double);
         std::string get_device_path();

@@ -11,6 +11,7 @@ Description: Implentation of Scan.h.
 #include <sys/wait.h>
 #include <cstdlib>
 #include <math.h>
+#include <fstream>
 
 /*The constructor reads the configuration file and fills in the class values. If you want to add a 
   configuration option, make sure it's in the correct format in the .config file and then add another else
@@ -93,7 +94,7 @@ double Scan::DegreestoRadians(double degrees){
     return ((degrees/180.0) * M_PI);
 
 }
-int Scan:: perform_scan(){
+int Scan::perform_scan(std::ofstream& of){
 
     int quadrant;
     double temp_angle;
@@ -117,15 +118,14 @@ int Scan:: perform_scan(){
         for (int i = 0; i < num_scans_per; i++){
 
             const sweep::scan scan = device.get_scan();
-            std::cout << "Scan #" << i << ":" << std::endl;
 
             for (const sweep::sample& sample : scan.samples){
 
-                std::cout << "angle " << (double)sample.angle/1000 << " distance " << sample.distance << " strength " << sample.signal_strength << std::endl;
-
+//                std::cout << "angle " << (double)sample.angle/1000 << " distance " << sample.distance << " strength " << sample.signal_strength << std::endl;
+                
                 angle = (double)sample.angle/1000;
+
                 quadrant = (angle/90) + 1;
-                std::cout << "My quadrant is: " << quadrant << std::endl;            
 
                 temp_angle = angle - (90 * (quadrant-1));
                 switch(quadrant){
@@ -133,13 +133,13 @@ int Scan:: perform_scan(){
                     case 1:
                         if (temp_angle < 45){
 
-                            y = (double) (sample.distance * cos(DegreestoRadians(temp_angle)));
-                            x = (double) (sample.distance * sin(DegreestoRadians(temp_angle)));            
+                            y = (double) (abs(sample.distance * sin(DegreestoRadians(temp_angle))));
+                            x = (double) (abs(sample.distance * cos(DegreestoRadians(temp_angle))));            
 
                         }else{
 
-                            y = (double) (sample.distance * sin(DegreestoRadians(90 - temp_angle)));
-                            x = (double) (sample.distance * cos(DegreestoRadians(90 - temp_angle)));
+                            y = (double) (abs(sample.distance * cos(DegreestoRadians(90 - temp_angle))));
+                            x = (double) (abs(sample.distance * sin(DegreestoRadians(90 - temp_angle))));
 
                         }
                         break;
@@ -147,13 +147,13 @@ int Scan:: perform_scan(){
                     case 2:
                         if (temp_angle < 45){
 
-                            y = (double) (sample.distance * sin(DegreestoRadians(temp_angle)));
-                            x = (double) -(sample.distance * cos(DegreestoRadians(temp_angle)));            
+                            y = (double) (abs(sample.distance * cos(DegreestoRadians(temp_angle))));
+                            x = (double) -(abs(sample.distance * sin(DegreestoRadians(temp_angle))));            
 
                         }else{
 
-                            y = (double) (sample.distance * cos(DegreestoRadians(90 - temp_angle)));
-                            x = (double) -(sample.distance * sin(DegreestoRadians(90 - temp_angle)));
+                            y = (double) (abs(sample.distance * sin(DegreestoRadians(90 - temp_angle))));
+                            x = (double) -(abs(sample.distance * cos(DegreestoRadians(90 - temp_angle))));
 
                         }
                         break;
@@ -163,13 +163,13 @@ int Scan:: perform_scan(){
 
                         if (temp_angle < 45){
 
-                            y = (double) -(sample.distance * cos(DegreestoRadians(temp_angle)));
-                            x = (double) -(sample.distance * sin(DegreestoRadians(temp_angle)));            
+                            y = (double) -(abs(sample.distance * sin(DegreestoRadians(temp_angle))));
+                            x = (double) -(abs(sample.distance * cos(DegreestoRadians(temp_angle))));            
 
                         }else{
 
-                            y = (double) -(sample.distance * sin(DegreestoRadians(90 - temp_angle)));
-                            x = (double) -(sample.distance * cos(DegreestoRadians(90 - temp_angle)));
+                            y = (double) -(abs(sample.distance * cos(DegreestoRadians(90 - temp_angle))));
+                            x = (double) -(abs(sample.distance * sin(DegreestoRadians(90 - temp_angle))));
 
                         }
                         break;
@@ -178,22 +178,23 @@ int Scan:: perform_scan(){
                     case 4:
                         if (temp_angle < 45){
 
-                            y = (double) -(sample.distance * sin(DegreestoRadians(temp_angle)));
-                            x = (double) (sample.distance * cos(DegreestoRadians(temp_angle)));            
+                            y = (double) -(abs(sample.distance * cos(DegreestoRadians(temp_angle))));
+                            x = (double) (abs(sample.distance * sin(DegreestoRadians(temp_angle))));            
 
                         }else{
 
-                            y = (double) -(sample.distance * cos(DegreestoRadians(90 - temp_angle)));
-                            x = (double) (sample.distance * sin(DegreestoRadians(90 - temp_angle)));
+                            y = (double) -(abs(sample.distance * sin(DegreestoRadians(90 - temp_angle))));
+                            x = (double) (abs(sample.distance * cos(DegreestoRadians(90 - temp_angle))));
 
                         }
                         break;
 
 
                 }   
-
-                std::cout << "X value: " << x << std::endl;
-                std::cout << "Y value: " << y << std::endl; 
+                
+                if ((x/100.0 < 6.0 && x/100.0 > -6.0) && (y/100.00 < 6.0 && y/100.0 > -6.0)){                of << x/100.0;
+                of << " " << y/100.0 << " 0" << std::endl; 
+                }
             }
 
         }
@@ -211,7 +212,7 @@ int Scan:: perform_scan(){
 
 }
 
-
+/*
 int main (int argc, char** argv){
 
     int scan_stat;
@@ -219,3 +220,4 @@ int main (int argc, char** argv){
     scan_stat = S->perform_scan();
 
 }
+*/
